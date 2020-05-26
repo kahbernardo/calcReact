@@ -3,45 +3,71 @@ import './Calculator.css'
 import Button from '../components/Button'
 import Display from '../components/Display'
 
+const initialState = {
+    displayValue:'0',
+    clearDisplay:false,
+    operation:null,
+    values:[0,0],
+    current:0,
+    index:0
+}
+        
+const [estado,setEstado] =useState("")
+
 const Calculator =()=>{
 
-    const initialState = {
-        displayValue:'0',
-        clearDisplay:false,
-        operation:null,
-        values:[0,0],
-        current:0
-    }
-
-    const [State,setState] =useState({
-        displayValue:'0',
-        clearDisplay:false,
-        operation:null,
-        values:[0,0],
-        current:0
-    })
+    setEstado(...initialState)
 
 
     const clearMemory=()=> {
-        setState(initialState)
+        setEstado(...initialState)
     }
 
     const setOperation=(operation)=> {
-        console.log(operation)
-    }
-    const addDigit=(n)=> {
-        if(n==='.'&&State.displayValue.includes('.')){
-            return
+        if(estado.index==0){
+            setEstado({operation,index:1,clearDisplay:true})
+        }else{
+            let equals= operation=='='
+            let currentOperation= estado.operation
+
+            let values = [...estado.values]
+            try{
+                values[0]=eval(`${values[0]} ${currentOperation} ${values[1]}`)
+            }catch(e){
+                values[0]=estado.values[0]
+            }
+            values[1]=0
+            setEstado({
+                displayValue:values[0],
+                operation:equals?null:operation,
+                index:equals?0:1,
+                clearDisplay:!equals,
+                values
+            })
         }
-        if(State.displayValue==='0'||State.clearDisplay){
-            clearMemory()
+    }
+
+    const addDigit=(n)=> {
+        if(n==='.'&&State.displayValue.includes('.')) return
+            let newValue = parseFloat(estado.displayValue)
+            let values = [estado.values]
+            values[estado.index]=newValue
+            let obj={
+                clearDisplay:estado.clearDisplay,
+                current:estado.clearDisplay?'':estado.displayValue,
+                displayValue:estado.current + n,
+                index:estado.index,
+                values
+            }
+            
+            setEstado({...obj})
         }
     }
 
     return(
             
             <div className="calculator">
-                <Display value={State.displayValue}/>
+                <Display value={estado.displayValue}/>
                 <Button label="AC" click={()=>clearMemory} triple/>
                 <Button label="/" click={()=>setOperation} operation/>
                 <Button label="7" click={()=>addDigit}/>
